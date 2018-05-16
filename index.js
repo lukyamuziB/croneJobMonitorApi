@@ -17,15 +17,17 @@ const server = http.createServer(function(req,res){
     const path = parseUrl.pathname; 
     const trimmedPath = path.replace(/^\/+|\+$/g, '');
 
+    //get the http method
+    const httpMethod = req.method.toLocaleLowerCase();
 
     //send the response
     res.end('Hello there\n')
 
     //log path
-    console.log('Request was recieved on: '+trimmedPath);
+    console.log('Request was recieved on: '+trimmedPath+ ' with '+httpMethod+  ' method');
 
 })
 
 server.listen(3000, function(){
-    console.log("the serer is now listening....");
+    console.log("the server is now listening....");
 })
