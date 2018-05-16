@@ -23,11 +23,15 @@ const server = http.createServer(function(req,res){
     //get the http method
     const httpMethod = req.method.toLocaleLowerCase();
 
+    //Get the headers as an object
+    const headers = req.headers;
+    
     //send the response
     res.end('Hello there\n')
 
     //log path
     console.log('Request was recieved on: '+trimmedPath+ ' with '+httpMethod+  ' method'+ ' and query params\n',queryStringObject);
+    console.log('\n Request recieved with these headers: ', headers);
 })
 
 server.listen(3000, function(){
