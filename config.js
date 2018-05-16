@@ -10,13 +10,15 @@ const envs = {};
 //staging {default} environment
 
 envs.staging = {
-    'port' : 3000,
+    'httpPort' : 3000,
+    'httpsPort' : 3001,
     'envName' : 'staging'
 };
 
 //Production environmnet
 envs.production = {
-    'port' : 5000,
+    'httpPort' : 5000,
+    'httpsPort': 50001,
     'envName' : 'production'
 };
 

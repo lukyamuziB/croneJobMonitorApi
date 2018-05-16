@@ -5,14 +5,41 @@
 
 //Dependencies
 const http = require('http');
+const https = require('https');
 const url = require('url');
 const stringDecoder = require('string_decoder').StringDecoder;
+const fs = require('fs');
 
 const config = require('./config');
 
-//the server shoild respond to all requests with a string and listen on port 3000
 
-const server = http.createServer(function(req,res){
+//Intatiate http server
+const httpServer = http.createServer(function(req,res){
+    unifiedServer(req,res)
+})
+
+const httpsServerOPtions = {
+    'key' : fs.readFileSync('./https/key.pem', 'utf-8'),
+    'cert' : fs.readFileSync('./https/server.crt', 'utf-8'),
+};
+
+//Instatiate https Server
+const httpsServer = https.createServer(httpsServerOPtions,function(req,res){
+    unifiedServer(req,res)
+})
+
+httpServer.listen(config.port, function(){
+    console.log("Http server started in "+config.envName);
+    console.log("Http server is now listening on port "+config.httpPort+"....");
+})
+
+httpsServer.listen(config.port, function(){
+    console.log("Https server started in "+config.envName);
+    console.log("Https server is now listening on port "+config.httpsPort+"....");
+})
+
+//combined server logic
+const unifiedServer = function(req, res){
     //get the URL and parse it
     const parseUrl = url.parse(req.url, true);
 
@@ -30,7 +57,7 @@ const server = http.createServer(function(req,res){
     const headers = req.headers;
 
     //Get the payload if there is any
-    const decoder = new stringDecoder('utf-8');
+    const decoder = new stringDecoder('utf-');
     let stringBuffer = '';
 
     req.on('data', function(data){
@@ -70,12 +97,7 @@ const server = http.createServer(function(req,res){
             console.log('Returning this response: ', statusCode, payloadString);
         });
     });
-})
-
-server.listen(config.port, function(){
-    console.log("server started in "+config.envName);
-    console.log("the server is now listening on port "+config.port+"....");
-})
+};
 
 //Define handlers
 const handlers = {};
