@@ -101,10 +101,10 @@ const unifiedServer = function(req,res){
 //Define handlers
 const handlers = {};
 
+//ping handler
 handlers.ping = function(data, callback){
     callback(200);
 };
-
 
 //not found handler
 handlers.notFound = function(data, callback){
