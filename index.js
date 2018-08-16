@@ -9,37 +9,39 @@ const https = require('https');
 const url = require('url');
 const stringDecoder = require('string_decoder').StringDecoder;
 const fs = require('fs');
+const handlers = require('./lib/handlers');
+const helpers = require('./lib/helpers');
 
-const config = require('./config');
+const config = require('./lib/config');
 
 
 //Intatiate http server
 const httpServer = http.createServer(function(req,res){
-    unifiedServer(req,res)
-})
+    unifiedServer(req,res);
+});
 
 const httpsServerOPtions = {
     'key' : fs.readFileSync('./https/key.pem', 'utf-8'),
-    'cert' : fs.readFileSync('./https/server.crt', 'utf-8'),
+    'cert' : fs.readFileSync('./https/cert.pem', 'utf-8'),
 };
 
 //Instatiate https Server
 const httpsServer = https.createServer(httpsServerOPtions,function(req,res){
-    unifiedServer(req,res)
+    unifiedServer(req,res);
 })
 
-httpServer.listen(config.port, function(){
+httpServer.listen(config.httpPort, function(){
     console.log("Http server started in "+config.envName);
     console.log("Http server is now listening on port "+config.httpPort+"....");
 })
 
-httpsServer.listen(config.port, function(){
+httpsServer.listen(config.httpsPort, function(){
     console.log("Https server started in "+config.envName);
     console.log("Https server is now listening on port "+config.httpsPort+"....");
 })
 
 //combined server logic
-const unifiedServer = function(req, res){
+const unifiedServer = function(req,res){
     //get the URL and parse it
     const parseUrl = url.parse(req.url, true);
 
@@ -51,22 +53,20 @@ const unifiedServer = function(req, res){
     const queryStringObject = parseUrl.query;
 
     //get the http method
-    const httpMethod = req.method.toLocaleLowerCase();
+    const httpMethod = req.method.toLowerCase();
 
     //Get the headers as an object
     const headers = req.headers;
 
     //Get the payload if there is any
-    const decoder = new stringDecoder('utf-');
+    const decoder = new stringDecoder('utf-8');
     let stringBuffer = '';
 
     req.on('data', function(data){
         stringBuffer += decoder.write(data);
     });
-
     req.on('end', function(){
         stringBuffer += decoder.end();
-
         //choose a handler for our request
         const chosenHandler = typeof(router[trimmedPath]) !== 'undefined'? router[trimmedPath]:handlers.notFound;
 
@@ -76,7 +76,7 @@ const unifiedServer = function(req, res){
             'QueryParameters' : queryStringObject,
             'HttpMethod' : httpMethod,
             'Headers' : headers,
-            'Payload' : stringBuffer,
+            'payload' : helpers.parseJsonToObject(stringBuffer),
         };
 
         //Route request to the handler specified in the router
@@ -99,21 +99,8 @@ const unifiedServer = function(req, res){
     });
 };
 
-//Define handlers
-const handlers = {};
-
-//sample handler
-handlers.sample = function(data, callback){
-    //Callback an http statis code, payload object
-    callback(406, {'name': 'am a sample handler'});
-};
-
-//not found handler
-handlers.notFound = function(data, callback){
-    callback(404);
-}
-
 //Define a reuest router
 const router = {
-    'sample': handlers.sample
+    'ping': handlers.ping,
+    'users': handlers.users,
 }
